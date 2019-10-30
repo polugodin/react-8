@@ -11,36 +11,41 @@ const Autocomplete = ({
   valueField,
   placeholder,
   optionsClassName,
-  inputClassName
+  inputClassName,
+  noOptionMessage
 }) => {
-  const [data, setData] = useState([]);
   const [inputValue, setInputValue] = useState('');
-  const [isRenderOptions, setIsRenderOptions] = useState(false);
+  const [options, setOptions] = useState([]);
 
   useEffect(() => {
-    fetchData().then(({ data }) => setData(data));
-  }, [fetchData]);
-
-  const upData = () => {
-    let eq = false;
-    for (let i = 0; i < data.length; i++)
-      if (data[i][textField].toLowerCase() === inputValue.toLowerCase()) {
-        setIsRenderOptions(false);
-        onChange(typeof valueField === 'function' ? valueField(data[i]) : data[i][valueField]);
-        eq = true;
-        break;
+    if (inputValue === '') {
+      setOptions([]);
+      onChange('');
+      return;
+    }
+    fetchData(inputValue).then(({ data }) => {
+      if (data.matchedData.length === 0) {
+        setOptions(null);
+        onChange('');
+        return;
       }
-    if (!eq) onChange('');
-  };
-
-  useEffect(() => {
-    upData();
+      // if !null
+      if (!(!data.fullMatchedDataIndex && typeof data.fullMatchedDataIndex === 'object')) {
+        if (typeof valueField === 'function') {
+          onChange(valueField(data.matchedData[data.fullMatchedDataIndex]));
+        } else onChange(data.matchedData[data.fullMatchedDataIndex][valueField]);
+        data.matchedData = data.matchedData.filter((item, index) => index !== data.fullMatchedDataIndex);
+      }
+      setOptions(
+        data.matchedData.map(item => (
+          <div key={item.id} onClick={() => setInputValue(item[textField])}>
+            {renderItem(item)}
+          </div>
+        ))
+      );
+      if (!data.fullMatchedDataIndex && typeof data.fullMatchedDataIndex === 'object') onChange('');
+    });
   }, [inputValue]);
-
-  const onChangeHandler = e => {
-    setIsRenderOptions(true);
-    setInputValue(e.target.value);
-  };
 
   return (
     <div className={className}>
@@ -49,24 +54,10 @@ const Autocomplete = ({
         type="text"
         className={inputClassName}
         placeholder={placeholder}
-        onChange={onChangeHandler}
+        onChange={e => setInputValue(e.target.value)}
         value={inputValue}
       />
-      <div className={optionsClassName}>
-        {inputValue !== '' &&
-          isRenderOptions &&
-          data
-            .map(item => {
-              if (item[textField].toLowerCase().indexOf(inputValue.toLowerCase()) === 0) {
-                return (
-                  <div key={item.id} onClick={() => setInputValue(item[textField])}>
-                    {renderItem(item)}
-                  </div>
-                );
-              }
-            })
-            .filter(i => i)}
-      </div>
+      {options ? <div className={optionsClassName}>{options}</div> : noOptionMessage}
     </div>
   );
 };
@@ -75,6 +66,7 @@ Autocomplete.propTypes = {
   fetchData: PropTypes.func.isRequired,
   valueField: PropTypes.oneOfType([PropTypes.func, PropTypes.string]).isRequired,
   textField: PropTypes.string.isRequired,
+  noOptionMessage: PropTypes.node,
   className: PropTypes.string,
   optionsClassName: PropTypes.string,
   inputClassName: PropTypes.string,

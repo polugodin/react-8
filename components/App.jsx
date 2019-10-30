@@ -4,7 +4,7 @@ import Axios from 'axios';
 import './App.css';
 import Autocomplete from './Autocomplete';
 
-const fetchData = () => Axios.get('/options');
+const fetchData = match => Axios.get('/options', { params: { match } });
 const valueField = obj => obj.capital;
 const textField = 'country';
 const placeholder = 'введите название страны';
@@ -12,6 +12,7 @@ const className = 'autocomplete';
 const optionsClassName = 'autocomplete__options';
 const inputClassName = 'autocomplete__input';
 const label = 'ввод на русском, выбирать мышкой';
+const noOptionMessage = <div className="autocomplete__no-option-message">не найдено</div>;
 const renderItem = item => (
   <div className="autocomplete__item">
     {item.country}
@@ -28,7 +29,7 @@ const App = () => {
       <Autocomplete
         fetchData={fetchData}
         valueField={valueField}
-        onChange={value => setCapital(value)}
+        onChange={setCapital}
         className={className}
         optionsClassName={optionsClassName}
         inputClassName={inputClassName}
@@ -36,6 +37,7 @@ const App = () => {
         textField={textField}
         renderItem={renderItem}
         label={label}
+        noOptionMessage={noOptionMessage}
       />
     </div>
   );

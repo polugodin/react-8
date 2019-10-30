@@ -7,11 +7,12 @@
 }
 
 .autocomplete__options {
-  width: 260px;
+  width: 278px;
   max-height: 240px;
   overflow: auto;
   position: absolute;
   top: calc(100% + 1px);
+  background-color: #fff;
 }
 
 .autocomplete__item {
@@ -33,9 +34,21 @@
 }
 
 .autocomplete__input {
+  display: block;
+  margin-top: 4px;
   border: 1px solid rgba(0, 0, 0, 0.2);
   border-radius: 3px;
   font-size: 18px;
   padding: 4px 8px;
   width: 260px;
+}
+
+.autocomplete__no-option-message {
+  font-weight: 700;
+  color: #913333;
+  width: 260px;
+  padding: 4px 8px;
+  position: absolute;
+  top: calc(100% + 1px);
+  background-color: #fff;
 }
